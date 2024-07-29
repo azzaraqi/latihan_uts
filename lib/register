@@ -1,0 +1,179 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:http/http.dart' as http;
+import 'package:pra_uts/Model/model_register.dart';
+import 'package:pra_uts/login.dart';
+
+class RegisterScreen extends StatefulWidget {
+  @override
+  _RegisterScreenState createState() => _RegisterScreenState();
+}
+
+class _RegisterScreenState extends State<RegisterScreen> {
+  TextEditingController nama = TextEditingController();
+  TextEditingController nobp = TextEditingController();
+  TextEditingController nohp = TextEditingController();
+  TextEditingController email = TextEditingController();
+  GlobalKey<FormState> keyform = GlobalKey<FormState>();
+  bool isLoading = false;
+
+
+Future<void> registerAccount() async {
+    if (!keyform.currentState!.validate()) {
+      return;
+    }
+
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      http.Response res = await http.post(
+        Uri.parse("http://localhost/latihan_uts/daftar.php"),
+        body: {
+          "nama": nama.text,
+          "nobp": nobp.text,
+          "nohp": nohp.text,
+          "email": email.text,
+        },
+      );
+
+      ModelRegister data = modelRegisterFromJson(res.body);
+
+      if (data.status == "success") {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '${data.message}',
+              textAlign: TextAlign.center,
+            ),
+          ),
+        );
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => Login()),
+              (route) => false,
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '${data.message}',
+              textAlign: TextAlign.center,
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            e.toString(),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Register'),
+      ),
+      body: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage("gambar/2.jpg"), // Ganti dengan path gambar Anda
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: TextField(
+                    controller: nama,
+                    decoration: InputDecoration(
+                      labelText: 'Name',
+                      border: InputBorder.none,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(height: 16.0),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: TextField(
+                    controller: nobp,
+                    decoration: InputDecoration(
+                      labelText: 'nobp',
+                      border: InputBorder.none,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(height: 16.0),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: TextField(
+                    controller: nohp,
+                    decoration: InputDecoration(
+                      labelText: 'nohp',
+                      border: InputBorder.none,
+                    ),
+                  ),
+                ),
+              ),Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: TextField(
+                    controller: email,
+                    decoration: InputDecoration(
+                      labelText: 'email',
+                      border: InputBorder.none,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(height: 32.0),
+
+              ElevatedButton(
+                onPressed: () {
+                  registerAccount();
+                },
+                child: Text('Register'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
